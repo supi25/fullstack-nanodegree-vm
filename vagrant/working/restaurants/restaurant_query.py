@@ -11,7 +11,8 @@ RESsession = sessionmaker(bind=engine)
 
 session = RESsession()
 
-restaurant_list = session.query(Restaurant.name).order_by(Restaurant.name.asc()).all()
+restaurant_list = session.query(Restaurant).order_by(Restaurant.name.asc()).all()
 
-for restaurant_data in restaurant_list:
-	print restaurant_data[0]
+print restaurant_list
+#for restaurant_data in restaurant_list:
+#	print restaurant_data[0]
