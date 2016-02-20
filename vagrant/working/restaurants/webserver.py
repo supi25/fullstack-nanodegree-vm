@@ -44,24 +44,54 @@ class webserverHandler(BaseHTTPRequestHandler):
 				return
 
 
-			if self.path.endswith("restaurants"):
+			if self.path.endswith("/restaurants"):
 				self.send_response(200)
 				self.send_header('Content-type', 'text/html')
 				self.end_headers()
 
-				restaurant_list = session.query(Restaurant.name).order_by(Restaurant.name.asc()).all()
+				restaurant_list = session.query(Restaurant).order_by(Restaurant.name.asc()).all()
 
 				output = ""
 				output += "<html><body>"
 
 				for restaurant_data in restaurant_list:
-					output += restaurant_data[0]
+					output += restaurant_data.name
 					output += "<br>"
-					output += "<a href = '/restaurants'> Edit </a>"
+					output += "<a href = '/%s/edit'> Edit </a>" % restaurant_data.id
 					output += "<br>"
 					output += "<a href = '/restaurants'> Delete </a>"
 					output += "<br><br>"
 
+				output += "<a href = '/add_restaurant'> Add New Restaurant </a>"
+
+				output += "</body></html>"
+
+				self.wfile.write(output)
+				print output
+				return
+
+			if self.path.endswith("/add_restaurant"):
+
+				output = ""
+				output += "<html><body>"
+				output += "<form method='POST' enctype='multipart/form-data' action='/add_restaurant'><h2>Enter name of new restaurant<h2><input name='new_restaurant' type='text' ><input type='submit' value='Create'> </form>"
+				output += "<br><br>"
+				output += "<a href = '/restaurants' > Cancel </a></body></html>"
+				output += "</body></html>"
+
+				self.wfile.write(output)
+				print output
+				return
+
+			if self.path.endswith("/edit"):
+				edit_id = self.path.rpartition("/")[0].partition("/")[2]
+				edit_name = session.query(Restaurant.name).filter(Restaurant.id == edit_id).first()
+
+				output = ""
+				output += "<html><body>"
+				output += "<form method='POST' enctype='multipart/form-data' action='/%s/edit'><h2>%s<h2><input name='edited_restaurant' type='text' ><input type='submit' value='Edit'> </form>" % (edit_id, edit_name[0])
+				output += "<br><br>"
+				output += "<a href = '/restaurants' > Cancel </a></body></html>"
 				output += "</body></html>"
 
 				self.wfile.write(output)
@@ -79,18 +109,64 @@ class webserverHandler(BaseHTTPRequestHandler):
 			ctype, pdict = cgi.parse_header(self.headers.getheader('Content-type'))
 			if ctype == 'multipart/form-data':
 				fields = cgi.parse_multipart(self.rfile, pdict)
-				messagecontent = fields.get('message')
 
-				output = ""
-				output += "<html><body>"
-				output += " <h2> Okay, how about this: </h2>"
-				output += "<h1> %s </h1>" % messagecontent[0]
+				if fields.get('message'):
+					print "message"
+					messagecontent = fields.get('message')
 
-				output += "<form method='POST' enctype='multipart/form-data' action='/hello'><h2>What would you like me to say?<h2><input name='message' type='text' ><input type='submit' value='Submit'> </form>"
-				output += "</body></html>"
+					output = ""
+					output += "<html><body>"
+					output += " <h2> Okay, how about this: </h2>"
+					output += "<h1> %s </h1>" % messagecontent[0]
 
-				self.wfile.write(output)
-				print output
+					output += "<form method='POST' enctype='multipart/form-data' action='/hello'><h2>What would you like me to say?<h2><input name='message' type='text' ><input type='submit' value='Submit'> </form>"
+					output += "</body></html>"
+
+					self.wfile.write(output)
+					print output
+					return
+
+				if fields.get('new_restaurant'):
+					print 'new_restaurant'
+					inputcontent = fields.get('new_restaurant')
+
+					new_restaurant_object = Restaurant(name = inputcontent[0])
+
+					session.add(new_restaurant_object)
+					session.commit()
+
+					output = ""
+					output += "<html><body>"
+					output += "<h2> Restaurant added </h2>"
+					output += "<br><br>"
+					output += "<a href = '/restaurants' > Return to list </a>"
+					output += "</body></html>"
+
+					self.wfile.write(output)
+					print output
+					return
+
+				if fields.get('edited_restaurant'):
+					print 'edited_restaurant'
+					inputcontent = fields.get('edited_restaurant')
+
+					edit_id = self.path.rpartition("/")[0].partition("/")[2]
+
+					editing_restaurant = session.query(Restaurant).filter(Restaurant.id == edit_id).first()
+					editing_restaurant.name = inputcontent[0]
+
+					session.commit()
+
+					output = ""
+					output += "<html><body>"
+					output += "<h2> Restaurant name updated </h2>"
+					output += "<br><br>"
+					output += "<a href = '/restaurants' > Return to list </a>"
+					output += "</body></html>"
+
+					self.wfile.write(output)
+					print output
+					return
 
 		except:
 			pass
