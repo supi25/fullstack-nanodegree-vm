@@ -1,6 +1,15 @@
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import cgi
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from database_setup import Restaurant, Base, MenuItem
+
+engine = create_engine('sqlite:///restaurantmenu.db')
+Base.metadata.bind = engine
+RESsession = sessionmaker(bind=engine)
+session = RESsession()
+
 class webserverHandler(BaseHTTPRequestHandler):
 	def do_GET(self):
 		try:
@@ -29,6 +38,31 @@ class webserverHandler(BaseHTTPRequestHandler):
 				output += "&#161Hola!"
 				output += "<form method='POST' enctype='multipart/form-data' action='/hello'><h2>What would you like me to say?<h2><input name='message' type='text' ><input type='submit' value='Submit'> </form>"
 				output += "<a href = '/hello' > Back to Hello </a></body></html>"
+
+				self.wfile.write(output)
+				print output
+				return
+
+
+			if self.path.endswith("restaurants"):
+				self.send_response(200)
+				self.send_header('Content-type', 'text/html')
+				self.end_headers()
+
+				restaurant_list = session.query(Restaurant.name).order_by(Restaurant.name.asc()).all()
+
+				output = ""
+				output += "<html><body>"
+
+				for restaurant_data in restaurant_list:
+					output += restaurant_data[0]
+					output += "<br>"
+					output += "<a href = '/restaurants'> Edit </a>"
+					output += "<br>"
+					output += "<a href = '/restaurants'> Delete </a>"
+					output += "<br><br>"
+
+				output += "</body></html>"
 
 				self.wfile.write(output)
 				print output
