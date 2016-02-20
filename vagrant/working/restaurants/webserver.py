@@ -74,7 +74,7 @@ class webserverHandler(BaseHTTPRequestHandler):
 
 				output = ""
 				output += "<html><body>"
-				output += "<form method='POST' enctype='multipart/form-data' action='/add'><h2>Enter name of new restaurant<h2><input name='new_restaurant' type='text' ><input type='submit' value='Create'> </form>"
+				output += "<form method='POST' enctype='multipart/form-data' action='/add'><h2>Enter name of new restaurant<h2><input name='message' type='text' ><input type='submit' value='Create'> </form>"
 				output += "<br><br>"
 				output += "<a href = '/restaurants' > Cancel </a></body></html>"
 				output += "</body></html>"
@@ -89,7 +89,7 @@ class webserverHandler(BaseHTTPRequestHandler):
 
 				output = ""
 				output += "<html><body>"
-				output += "<form method='POST' enctype='multipart/form-data' action='/%s/edit'><h2>%s<h2><input name='edited_restaurant' type='text' ><input type='submit' value='Edit'> </form>" % (edit_id, edit_name[0])
+				output += "<form method='POST' enctype='multipart/form-data' action='/%s/edit'><h2>%s<h2><input name='message' type='text' ><input type='submit' value='Edit'> </form>" % (edit_id, edit_name[0])
 				output += "<br><br>"
 				output += "<a href = '/restaurants' > Cancel </a></body></html>"
 				output += "</body></html>"
@@ -104,7 +104,7 @@ class webserverHandler(BaseHTTPRequestHandler):
 
 				output = ""
 				output += "<html><body>"
-				output += "<form method='POST' enctype='multipart/form-data' action='/%s/delete'><h2>Are you sure you want to delete %s?<h2><input name='delete_restaurant' type='submit' value='Delete'> </form>" % (delete_id, delete_name[0])
+				output += "<form method='POST' enctype='multipart/form-data' action='/%s/delete'><h2>Are you sure you want to delete %s?<h2><input name='message' type='submit' value='Delete'> </form>" % (delete_id, delete_name[0])
 				output += "<br><br>"
 				output += "<a href = '/restaurants' > Cancel </a></body></html>"
 				output += "</body></html>"
@@ -118,16 +118,13 @@ class webserverHandler(BaseHTTPRequestHandler):
 
 	def do_POST(self):
 		try:
-			self.send_response(301)
-			self.end_headers()
+			#self.send_response(301)
+			#self.end_headers()
 
-			ctype, pdict = cgi.parse_header(self.headers.getheader('Content-type'))
-			if ctype == 'multipart/form-data':
-				fields = cgi.parse_multipart(self.rfile, pdict)
-				print fields
-
-				if fields.get('message'):
-					print "message"
+			if self.path.endswith("/hello"):
+				ctype, pdict = cgi.parse_header(self.headers.getheader('Content-type'))
+				if ctype == 'multipart/form-data':
+					fields = cgi.parse_multipart(self.rfile, pdict)
 					messagecontent = fields.get('message')
 
 					output = ""
@@ -142,29 +139,28 @@ class webserverHandler(BaseHTTPRequestHandler):
 					print output
 					return
 
-				if fields.get('new_restaurant'):
-					print 'new_restaurant'
-					inputcontent = fields.get('new_restaurant')
+			if self.path.endswith("/add"):
+				ctype, pdict = cgi.parse_header(self.headers.getheader('Content-type'))
+				if ctype == 'multipart/form-data':
+					fields = cgi.parse_multipart(self.rfile, pdict)
+					inputcontent = fields.get('message')
 
 					new_restaurant_object = Restaurant(name = inputcontent[0])
 
 					session.add(new_restaurant_object)
 					session.commit()
 
-					output = ""
-					output += "<html><body>"
-					output += "<h2> Restaurant added </h2>"
-					output += "<br><br>"
-					output += "<a href = '/restaurants' > Return to list </a>"
-					output += "</body></html>"
-
-					self.wfile.write(output)
-					print output
+					self.send_response(301)
+					self.send_header('Content-type', 'text/html')
+					self.send_header('Location', '/restaurants')
+					self.end_headers()
 					return
 
-				if fields.get('edited_restaurant'):
-					print 'edited_restaurant'
-					inputcontent = fields.get('edited_restaurant')
+			if self.path.endswith("/edit"):
+				ctype, pdict = cgi.parse_header(self.headers.getheader('Content-type'))
+				if ctype == 'multipart/form-data':
+					fields = cgi.parse_multipart(self.rfile, pdict)
+					inputcontent = fields.get('message')
 
 					edit_id = self.path.rpartition("/")[0].partition("/")[2]
 
@@ -173,19 +169,17 @@ class webserverHandler(BaseHTTPRequestHandler):
 
 					session.commit()
 
-					output = ""
-					output += "<html><body>"
-					output += "<h2> Restaurant name updated </h2>"
-					output += "<br><br>"
-					output += "<a href = '/restaurants' > Return to list </a>"
-					output += "</body></html>"
-
-					self.wfile.write(output)
-					print output
+					self.send_response(301)
+					self.send_header('Content-type', 'text/html')
+					self.send_header('Location', '/restaurants')
+					self.end_headers()
 					return
 
-				if fields.get('delete_restaurant'):
-					print 'delete_restaurant'
+			if self.path.endswith("/delete"):
+				ctype, pdict = cgi.parse_header(self.headers.getheader('Content-type'))
+				if ctype == 'multipart/form-data':
+					fields = cgi.parse_multipart(self.rfile, pdict)
+					inputcontent = fields.get('message')
 
 					delete_id = self.path.rpartition("/")[0].partition("/")[2]
 
@@ -194,15 +188,10 @@ class webserverHandler(BaseHTTPRequestHandler):
 					session.delete(deleting_restaurant)
 					session.commit()
 
-					output = ""
-					output += "<html><body>"
-					output += "<h2> Restaurant deleted </h2>"
-					output += "<br><br>"
-					output += "<a href = '/restaurants' > Return to list </a>"
-					output += "</body></html>"
-
-					self.wfile.write(output)
-					print output
+					self.send_response(301)
+					self.send_header('Content-type', 'text/html')
+					self.send_header('Location', '/restaurants')
+					self.end_headers()
 					return
 
 		except:
