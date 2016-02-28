@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, request, redirect
+from flask import Flask, render_template, url_for, request, redirect, flash
 app = Flask(__name__)
 
 
@@ -25,18 +25,37 @@ def newMenuItem(restaurant_select):
 		newItem = MenuItem(name = request.form['name'],restaurant_id = restaurant_select)
 		session.add(newItem)
 		session.commit()
+		flash("New menu item created!")
 		return redirect(url_for('restaurantMenu', restaurant_select = restaurant_select))
 	else:
 		return render_template('newmenuitem.html', restaurant_id = restaurant_select)
 
-@app.route('/restaurants/<int:restaurant_select>/<int:menu_select>/edit/')
+@app.route('/restaurants/<int:restaurant_select>/<int:menu_select>/edit/', methods=['GET','POST'])
 def editMenuItem(restaurant_select, menu_select):
-	return "page to edit a new menu item. Task 2 complete!"
+	editItem = session.query(MenuItem).filter_by(id = menu_select).one()
+	if request.method == 'POST':
+		if request.form['name']:
+			editItem.name = request.form['name']
+		session.add(editItem)
+		session.commit()
+		flash("Menu item edited!")
+		return redirect(url_for('restaurantMenu', restaurant_select = restaurant_select))
+	else:
+		return render_template('editmenuitem.html', restaurant_id = restaurant_select, menu_id = menu_select, edited_item = editItem)
 
-@app.route('/restaurants/<int:restaurant_select>/<int:menu_select>/delete/')
+@app.route('/restaurants/<int:restaurant_select>/<int:menu_select>/delete/', methods=['GET','POST'])
 def deleteMenuItem(restaurant_select, menu_select):
+	deleteItem = session.query(MenuItem).filter_by(id = menu_select).one()
+	if request.method == 'POST':
+		session.delete(deleteItem)
+		session.commit()
+		flash("Menu item deleted!")
+		return redirect(url_for('restaurantMenu', restaurant_select = restaurant_select))
+	else:
+		return render_template('deletemenuitem.html', restaurant_id = restaurant_select, menu_id = menu_select, deleted_item = deleteItem)
 	return "page to delete a new menu item. Task 3 complete!"
 
 if __name__ == '__main__':
+	app.secret_key = 'super_secret_key_25'
 	app.debug = True
 	app.run(host = '0.0.0.0', port = 5000)
