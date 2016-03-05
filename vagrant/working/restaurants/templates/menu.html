@@ -7,6 +7,12 @@
 			{% for item in items %}
 
 			{{ item.name }}
+			</br>
+			{{ item.course }}
+			</br>
+			{{ item.description }}
+			</br>
+			{{ item.price }}
 
 			</br>
 			<a href = '{{url_for('editMenuItem', restaurant_select = restaurant.id, menu_select = item.id)}}'>Edit</a>
