@@ -9,6 +9,7 @@
 			{% for restaurant in restaurants %}
 
 			{{ restaurant.name }}
+			<a href = '{{url_for('showMenu', restaurant_select = restaurant.id)}}'>Menu</a>
 			</br>
 			<a href = '{{url_for('editRestaurant', restaurant_select = restaurant.id)}}'>Edit</a>
 			</br>
