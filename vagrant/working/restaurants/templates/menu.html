@@ -9,9 +9,9 @@
 			{{ item.name }}
 
 			</br>
-			<a href = '#'>Edit</a>
+			<a href = '{{url_for('editMenuItem', restaurant_select = restaurant.id, menu_select = item.id)}}'>Edit</a>
 			</br>
-			<a href = '#'>Delete</a>
+			<a href = '{{url_for('deleteMenuItem', restaurant_select = restaurant.id, menu_select = item.id)}}'>Delete</a>
 			</br></br></br>
 
 			{% endfor %}
@@ -19,6 +19,8 @@
 		{% else %}
 			There are currently no items on the menu.
 		{% endif %}
+
+		<a href = '{{url_for('newMenuItem', restaurant_select = restaurant.id)}}'>New Menu Item</a>
 
 	</body>
 </html>

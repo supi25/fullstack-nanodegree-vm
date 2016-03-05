@@ -10,9 +10,9 @@
 
 			{{ restaurant.name }}
 			</br>
-			<a href = '#'>Edit</a>
+			<a href = '{{url_for('editRestaurant', restaurant_select = restaurant.id)}}'>Edit</a>
 			</br>
-			<a href = '#'>Delete</a>
+			<a href = '{{url_for('deleteRestaurant', restaurant_select = restaurant.id)}}'>Delete</a>
 			</br></br></br>
 
 			{% endfor %}
@@ -21,6 +21,7 @@
 			There are currently no restaurants near you.
 		{% endif %}
 
+		<a href = '{{url_for('newRestaurant')}}'>New Restaurant</a>
 
 	</body>
 </html>
