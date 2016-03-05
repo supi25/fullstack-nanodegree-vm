@@ -1,0 +1,26 @@
+<html>
+	<body>
+		<h1>Restaurants near you</h1>
+
+		{% if restaurants %}
+
+			</br>
+
+			{% for restaurant in restaurants %}
+
+			{{ restaurant.name }}
+			</br>
+			<a href = '#'>Edit</a>
+			</br>
+			<a href = '#'>Delete</a>
+			</br></br></br>
+
+			{% endfor %}
+
+		{% else %}
+			There are currently no restaurants near you.
+		{% endif %}
+
+
+	</body>
+</html>
