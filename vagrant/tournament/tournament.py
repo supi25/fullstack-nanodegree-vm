@@ -144,5 +144,11 @@ def swissPairings():
         id2: the second player's unique id
         name2: the second player's name
     """
+    standings = playerStandings()
+    pair_list = [];
+    for i in xrange(0,countPlayers() // 2):
+        pair_list.append((standings[2*i][0], standings[2*i][1], standings[2*i+1][0], standings[2*i+1][1]));
+    return pair_list
+
 
 
