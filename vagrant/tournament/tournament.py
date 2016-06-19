@@ -5,6 +5,17 @@
 
 import psycopg2
 
+def exists(db_cursor, match_table):
+    db_cursor.execute("SELECT EXISTS ("
+                "SELECT 1 "
+                "FROM information_schema.tables "
+                "WHERE table_name = %s)", (match_table,)
+            );
+    if(db_cursor.fetchall()[0][0]):
+        return True
+    else:
+        return False
+
 
 def connect():
     """Connect to the PostgreSQL database.  Returns a database connection."""
@@ -13,14 +24,44 @@ def connect():
 
 def deleteMatches():
     """Remove all the match records from the database."""
+    DB = connect()
+    c = DB.cursor()
+    if(exists(c, 'matches')):
+        c.execute("DELETE FROM matches")
+        DB.commit()
+        DB.close()
+        return True
+    else:
+        DB.close()
+        return False
 
 
 def deletePlayers():
     """Remove all the player records from the database."""
+    DB = connect()
+    c = DB.cursor()
+    if(exists(c, 'players')):
+        c.execute("DELETE FROM players")
+        DB.commit()
+        DB.close()
+        return True
+    else:
+        DB.close()
+        return False
 
 
 def countPlayers():
     """Returns the number of players currently registered."""
+    DB = connect()
+    c = DB.cursor()
+    if(exists(c, 'players')):
+        c.execute("SELECT count(id) FROM players")
+        player_count = c.fetchall()[0][0]
+        DB.close()
+        return player_count
+    else:
+        DB.close()
+        return 0
 
 
 def registerPlayer(name):
@@ -32,6 +73,16 @@ def registerPlayer(name):
     Args:
       name: the player's full name (need not be unique).
     """
+    DB = connect()
+    c = DB.cursor()
+    if(exists(c, 'players')):
+        c.execute("INSERT INTO players (name, wins, matches, best_opponent_wins) VALUES (%s, 0, 0, 0)", (name,))
+        DB.commit()
+        DB.close()
+        return True
+    else:
+        DB.close()
+        return False
 
 
 def playerStandings():
