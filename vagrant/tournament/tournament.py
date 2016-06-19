@@ -76,7 +76,7 @@ def registerPlayer(name):
     DB = connect()
     c = DB.cursor()
     if(exists(c, 'players')):
-        c.execute("INSERT INTO players (name, wins, matches, best_opponent_wins) VALUES (%s, 0, 0, 0)", (name,))
+        c.execute("INSERT INTO players (name) VALUES (%s)", (name,))
         DB.commit()
         DB.close()
         return True
@@ -100,8 +100,8 @@ def playerStandings():
     """
     DB = connect()
     c = DB.cursor()
-    if(exists(c, 'players')):
-        c.execute("SELECT id, name, wins, matches FROM players ORDER BY wins DESC")
+    if(exists(c, 'player_details')):
+        c.execute("SELECT id, name, wins, matches FROM player_details ORDER BY wins DESC")
         standings =  c.fetchall()
         DB.close()
         return standings
@@ -122,36 +122,8 @@ def reportMatch(winner, loser):
     if(exists(c, 'matches')):
         c.execute("INSERT INTO matches (player_id, opponent_id, outcome) VALUES (%s, %s, %s)", (winner, loser, 'win'))
         c.execute("INSERT INTO matches (player_id, opponent_id, outcome) VALUES (%s, %s, %s)", (loser, winner, 'loss'))
-    else:
-        DB.close()
-        return False
-    if(exists(c, 'players')):
-        c.execute(
-                    "UPDATE players AS p2 "
-                    "SET wins = win_counts.win_count "
-                    "FROM ("
-                            "SELECT p1.id AS p_id, count(m.id) AS win_count "
-                            "FROM players AS p1 JOIN matches AS m "
-                            "ON p1.id = m.player_id "
-                            "WHERE m.outcome = 'win' "
-                            "GROUP BY p1.id "
-                        ") AS win_counts "
-                    "WHERE p2.id = win_counts.p_id"
-                )
-        c.execute(
-                    "UPDATE players AS p2 "
-                    "SET matches = match_counts.match_count "
-                    "FROM ("
-                            "SELECT p1.id AS p_id, count(m.id) AS match_count "
-                            "FROM players AS p1 JOIN matches AS m "
-                            "ON p1.id = m.player_id "
-                            "GROUP BY p1.id "
-                        ") AS match_counts "
-                    "WHERE p2.id = match_counts.p_id"
-            )
         DB.commit()
         DB.close()
-        return True
     else:
         DB.close()
         return False
