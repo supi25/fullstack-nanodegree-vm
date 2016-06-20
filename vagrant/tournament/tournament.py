@@ -88,11 +88,14 @@ def registerPlayer(name):
 def playerStandings():
     """Returns a list of the players and their win records, sorted by wins.
 
-    The first entry in the list should be the player in first place, or a player
-    tied for first place if there is currently a tie.
+    Players are ranked by wins. If multiple players have the same number of wins,
+    they are ranked by their opponent match wins (OMW). OMW is the total number
+    of match wins that all of their prior opponents have. The first entry in the
+    list should be the player in first place, or a player tied for first place if
+    there is currently a tie.
 
     Returns:
-      A list of tuples, each of which contains (id, name, wins, matches):
+      A list of tuples, each of which contains (id, name, wins, matches, omw):
         id: the player's unique id (assigned by the database)
         name: the player's full name (as registered)
         wins: the number of matches the player has won
@@ -101,7 +104,7 @@ def playerStandings():
     DB = connect()
     c = DB.cursor()
     if(exists(c, 'player_details')):
-        c.execute("SELECT id, name, wins, matches FROM player_details ORDER BY wins DESC")
+        c.execute("SELECT id, name, wins, matches, omw FROM player_details ORDER BY wins DESC, omw DESC")
         standings =  c.fetchall()
         DB.close()
         return standings
